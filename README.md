@@ -2,6 +2,8 @@
 
 
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![build status](https://secure.travis-ci.org/cyon/vuex-pagination.png)](http://travis-ci.org/cyon/vuex-pagination)
+
 
 This project strives to be the perfect fit for any paginated resource
 that needs to be integrated into a Vuex application and can serve many
