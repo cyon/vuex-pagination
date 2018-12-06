@@ -1,0 +1,35 @@
+{
+  "name": "vuex-pagination",
+  "version": "0.0.0",
+  "description": "Use paginated resources in your Vue/Vuex app with ease",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard \"index.js\" \"src/**/*.js\" \"test/**/*.js\" && jest"
+  },
+  "keywords": [
+    "vue",
+    "vuex",
+    "resource",
+    "http",
+    "pagination",
+    "paginated",
+    "paginated-resource"
+  ],
+  "author": "Max Gfeller <mg@cyon.ch>",
+  "license": "ISC",
+  "devDependencies": {
+    "@vue/test-utils": "^1.0.0-beta.26",
+    "jest": "^23.6.0",
+    "standard": "^11.0.1",
+    "tape": "^4.9.1",
+    "vue": "^2.5.17",
+    "vuex": "^3.0.1"
+  },
+  "dependencies": {
+    "browserify-global-shim": "^1.0.3",
+    "lodash.get": "^4.4.2",
+    "object-hash": "^1.3.0",
+    "vue-deepset": "^0.6.3",
+    "vueify": "^9.4.1"
+  }
+}
