@@ -1,4 +1,4 @@
-const Vue = require('vue/dist/vue.common')
+const Vue = require('vue')
 const { getRootModuleName } = require('./rootModuleName')
 const hash = require('object-hash')
 const isEqual = require('lodash.isequal')
