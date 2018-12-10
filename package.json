@@ -6,6 +6,10 @@
   "scripts": {
     "test": "standard \"index.js\" \"src/**/*.js\" \"test/**/*.js\" && jest"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cyon/vuex-pagination"
+  },
   "keywords": [
     "vue",
     "vuex",
