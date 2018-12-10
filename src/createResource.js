@@ -69,7 +69,7 @@ module.exports = function (name, fetchPage, opts) {
       },
       cleanupRegistries: async function ({ commit, state }) {
         if (state.currentRequest) await state.currentRequest
-        // await Vue.nextTick()
+
         let cacheResources = state.opts.cacheResources
 
         if (Object.keys(state.registry).length <= cacheResources) return
