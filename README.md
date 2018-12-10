@@ -255,38 +255,6 @@ For this you'd have to check for the `loading` attribute:
 </template>
 ```
 
-### Infinite Scrolling
-
-Building up on the previous example, we could also say that we want to display all of
-those books on the same page. Usually Infinite Scrolling works pretty similar to "classical"
-pagination: instead of listening on a button click you'd just listen for a scroll indicator - e.g.
-user has scrolled to the bottom of the page. And instead of loading the results in a new page you
-just append those to the existing list.
-
-```vue
-<template>
-  <ul>
-    <li v-for="book in books.items" :key="book.id">{{book.title}}</li>
-  </ul>
-</template>
-<script>
-module.exports = {
-  created () {
-    this.$el.addEventListener('scroll', () => {
-      if (this.books.loading) return
-
-      if ((window.innerHeight + window.scrollY) >= (document.documentElement.offsetHeight - 200)) {
-        this.books.page += 1
-      }
-    })
-  },
-  computed: {
-    books: createInstance('books', { page: 1, pageSize: 10 })
-  }
-}
-</script>
-```
-
 ### Search
 
 Let's say you want your user to be able to search through the books on your web application. For
