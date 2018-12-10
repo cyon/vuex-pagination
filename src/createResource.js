@@ -1,6 +1,7 @@
 const Vue = require('vue/dist/vue.common')
 const { getRootModuleName } = require('./rootModuleName')
 const hash = require('object-hash')
+const isEqual = require('lodash.isequal')
 
 module.exports = function (name, fetchPage, opts) {
   if (!opts) opts = {}
@@ -101,6 +102,11 @@ module.exports = function (name, fetchPage, opts) {
         dispatch('fetchPage', opts.id)
       },
       updateInstance: function ({ commit, state, dispatch }, opts) {
+        let newInstance = Object.assign({}, state.instances[opts.id], opts)
+        delete newInstance['id']
+
+        if (isEqual(state.instances[opts.id], newInstance)) return
+
         if (opts.pageSize && !opts.page) {
           // we have to re-calculate the current page
           let beforeSize = state.instances[opts.id].pageSize
