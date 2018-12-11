@@ -2,6 +2,7 @@ const Vue = require('vue')
 const { getRootModuleName } = require('./rootModuleName')
 const hash = require('object-hash')
 const isEqual = require('lodash.isequal')
+const { getVueSet } = require('./util')
 
 module.exports = function (name, fetchPage, opts) {
   if (!opts) opts = {}
@@ -195,8 +196,8 @@ module.exports = function (name, fetchPage, opts) {
     },
     mutations: {
       setRegistry: function (state, { type, registry }) {
-        Vue.set(state.registry[type], 'items', registry)
-        Vue.set(state.registry[type], 'lastUpdated', Date.now())
+        getVueSet()(state.registry[type], 'items', registry)
+        getVueSet()(state.registry[type], 'lastUpdated', Date.now())
       },
       removeRegistries: function (state, keys) {
         keys.map((key) => {
