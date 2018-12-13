@@ -32,6 +32,32 @@ test('Simple pagination', async function () {
   expect(wrapper.vm.test.items).toEqual([1, 2, 3])
 })
 
+test('No null values', async function () {
+  let adapter = new TestAdapter()
+  adapter.nextResult = {
+    total: 7,
+    data: [1, 2, 3, 4, 5]
+  }
+
+  let wrapper = createWrapper('test1-1', { page: 1, pageSize: 5 })
+  createResource('test1-1', adapter.fetchPage.bind(adapter))
+
+  await nextTick()
+  await sleep(1000)
+
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5])
+
+  adapter.nextResult = {
+    total: 7,
+    data: [6, 7]
+  }
+
+  wrapper.vm.test.page = 2
+  await nextTick()
+
+  expect(wrapper.vm.test.items).toEqual([6, 7])
+})
+
 test('Later initialization of resource', async function () {
   let adapter = new TestAdapter()
   adapter.nextResult = {
