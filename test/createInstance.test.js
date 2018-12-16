@@ -289,3 +289,31 @@ test('Args fn', async function () {
   expect(wrapper.vm.test.items).toEqual([11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
   expect(adapter.lastArgs.args).toEqual({ counter: 3 })
 })
+
+test('Base range functionality', async function () {
+  let adapter = new TestAdapter()
+  adapter.nextResult = {
+    total: 33,
+    data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+
+  let wrapper = createWrapper('test8', { pageFrom: 1, pageSize: 10 })
+  createResource('test8', adapter.fetchPage.bind(adapter))
+
+  await sleep(500)
+
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  expect(wrapper.vm.test.pageTo).toBe(1)
+  adapter.nextResult = {
+    total: 33,
+    data: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+  }
+  wrapper.vm.test.pageTo = 2
+  expect(wrapper.vm.test.loading).toBe(true)
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(2)
+  await nextTick()
+
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+})
