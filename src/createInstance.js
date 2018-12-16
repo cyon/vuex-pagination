@@ -19,7 +19,7 @@ module.exports = function (rootModuleName, title, opts) {
 
     if (rangeMode) {
       defaults.pageFrom = opts.pageFrom || 1
-      defaults.pageTo = opts.pageTo || 1
+      defaults.pageTo = opts.pageTo || defaults.pageFrom
     } else {
       defaults.page = opts.page || 1
     }
