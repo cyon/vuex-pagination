@@ -2,6 +2,10 @@ const { createIdentifier } = require('./util')
 
 module.exports = function (rootModuleName, title, opts) {
   let instanceId = createIdentifier()
+  let rangeMode = false
+
+  if (opts.pageFrom || opts.pageTo) rangeMode = true
+
   return function () {
     let store = this.$store
 
@@ -9,9 +13,15 @@ module.exports = function (rootModuleName, title, opts) {
       loading: true,
       items: [],
       pageSize: opts.pageSize || 10,
-      page: opts.page || 1,
       total: 0,
       totalPages: 1
+    }
+
+    if (rangeMode) {
+      defaults.pageFrom = opts.pageFrom || 1
+      defaults.pageTo = opts.pageTo || 1
+    } else {
+      defaults.page = opts.page || 1
     }
 
     let argsFn = (opts.args || (() => 'null')).bind(this)
@@ -47,7 +57,13 @@ module.exports = function (rootModuleName, title, opts) {
     }
 
     let set = (target, property, value) => {
-      if (!['page', 'pageSize'].includes(property)) return false
+      if (!['page', 'pageFrom', 'pageTo', 'pageSize'].includes(property)) return false
+
+      if (rangeMode && property === 'page') {
+        return false
+      } else if (!rangeMode && ['pageFrom', 'pageTo'].includes(property)) {
+        return false
+      }
 
       store.dispatch([rootModuleName, title, 'updateInstance'].join('/'), {
         id: this._uid + instanceId,

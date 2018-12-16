@@ -39,22 +39,35 @@ module.exports = function (name, fetchPage, opts) {
         let registryName = instanceConfig.registryName
         if (!instanceConfig || !state.registry || !state.registry[registryName]) return null
 
-        let indexStart = instanceConfig.page * instanceConfig.pageSize - instanceConfig.pageSize
-        let partition = state.registry[registryName].items.slice(indexStart, indexStart + instanceConfig.pageSize)
+        let partition
+        if (instanceConfig.page) {
+          let indexStart = instanceConfig.page * instanceConfig.pageSize - instanceConfig.pageSize
+          partition = state.registry[registryName].items.slice(indexStart, indexStart + instanceConfig.pageSize)
+        } else {
+          let indexStart = instanceConfig.pageFrom * instanceConfig.pageSize - instanceConfig.pageSize
+          partition = state.registry[registryName].items.slice(indexStart, indexStart + ((instanceConfig.pageTo - instanceConfig.pageFrom) * instanceConfig.pageSize))
+        }
 
         if (partition.includes(undefined)) {
           partition = []
         }
 
         let length = state.registry[registryName].items.length
-        return {
+        let instance = {
           items: partition,
-          page: instanceConfig.page,
           pageSize: instanceConfig.pageSize,
           total: length || 0,
           totalPages: (length ? Math.ceil(length / instanceConfig.pageSize) : 1),
           loading: instanceConfig.loading
         }
+
+        if (instanceConfig.page) {
+          instance.page = instanceConfig.page
+        } else {
+          instance.pageFrom = instanceConfig.pageFrom
+          instance.pageTo = instanceConfig.pageTo
+        }
+        return instance
       }
     },
     actions: {
@@ -98,7 +111,12 @@ module.exports = function (name, fetchPage, opts) {
       },
       createInstance: function ({ commit, dispatch }, opts) {
         opts.loading = true
-        opts.page = opts.page || 1
+        if (opts.page) {
+          opts.page = opts.page || 1
+        } else {
+          opts.pageFrom = opts.pageFrom || 1
+          opts.pageTo = opts.pageTo || 1
+        }
         commit('setInstanceConfig', Object.assign({}, opts))
         dispatch('fetchPage', opts.id)
       },
@@ -108,7 +126,7 @@ module.exports = function (name, fetchPage, opts) {
 
         if (isEqual(state.instances[opts.id], newInstance)) return
 
-        if (opts.pageSize && !opts.page) {
+        if (opts.pageSize && !opts.page && state.instances[opts.id].page) {
           // we have to re-calculate the current page
           let beforeSize = state.instances[opts.id].pageSize
           let beforePage = state.instances[opts.id].page
@@ -128,9 +146,12 @@ module.exports = function (name, fetchPage, opts) {
         if (state.currentRequest) await state.currentRequest
         let instanceConfig = state.instances[id]
         let registryName = instanceConfig.registryName
-        if ((instanceConfig.page * instanceConfig.pageSize) >= state.registry[registryName].items.length) return
+        if (instanceConfig.page && (instanceConfig.page * instanceConfig.pageSize) >= state.registry[registryName].items.length) return
+        if (instanceConfig.pageTo && (instanceConfig.pageTo * instanceConfig.pageSize) >= state.registry[registryName].items.length) return
 
-        let nextPageIndexStart = (instanceConfig.page + 1) * instanceConfig.pageSize - instanceConfig.pageSize
+        let nextPage = (instanceConfig.page ? instanceConfig.page : instanceConfig.pageTo) + 1
+
+        let nextPageIndexStart = nextPage * instanceConfig.pageSize - instanceConfig.pageSize
         let nextPageFragment = state.registry[registryName].items.slice(nextPageIndexStart, nextPageIndexStart + instanceConfig.pageSize)
 
         if (!nextPageFragment.includes(undefined)) return
@@ -149,17 +170,27 @@ module.exports = function (name, fetchPage, opts) {
         commit('setCurrentRequest', nextPageReq)
       },
       fetchPage: async function ({ commit, dispatch, state }, id) {
-        let instanceConfig = state.instances[id]
-        let indexStart = instanceConfig.page * instanceConfig.pageSize - instanceConfig.pageSize
-
         if (state.currentRequest) await state.currentRequest
+
+        let instanceConfig = state.instances[id]
         let registryName = instanceConfig.registryName
+        let rangeMode = !!instanceConfig.pageFrom
 
+        let indexStart = instanceConfig[rangeMode ? 'pageFrom' : 'page'] * instanceConfig.pageSize - instanceConfig.pageSize
+        let indexEnd = (rangeMode ? (instanceConfig.pageTo * instanceConfig.pageSize) : (indexStart + instanceConfig.pageSize))
+
+        var pagesToFetch
         if (state.registry[registryName] && state.registry[registryName].items.length) {
-          var partition = state.registry[registryName].items.slice(indexStart, indexStart + instanceConfig.pageSize)
-          var incomplete = partition.includes(undefined)
+          pagesToFetch = new Array((indexEnd - indexStart) / instanceConfig.pageSize).fill(true).map((page, i) => {
+            let pageStart = indexStart + (i * instanceConfig.pageSize)
+            let partition = state.registry[registryName].items.slice(pageStart, pageStart + instanceConfig.pageSize)
 
-          if (!incomplete) {
+            if (!partition.includes(undefined)) return null
+
+            return instanceConfig[rangeMode ? 'pageFrom' : 'page'] + i
+          }).filter(Boolean)
+
+          if (pagesToFetch.length === 0) {
             commit('setInstanceConfig', Object.assign({}, state.instances[id], { id, loading: false }))
             commit('setCurrentRequest', null)
 
@@ -168,30 +199,37 @@ module.exports = function (name, fetchPage, opts) {
 
             return
           }
+        } else {
+          pagesToFetch = new Array((indexEnd - indexStart) / instanceConfig.pageSize).fill(true).map((page, i) => instanceConfig[rangeMode ? 'pageFrom' : 'page'] + i)
         }
 
         if (state.instances[id].args !== 'null' && !state.instances[id].args) {
           return
         }
 
-        let req = fetchPage.call(this, state.instances[id]).then((result) => {
-          if (state.registry[registryName] && state.registry[registryName].items.length !== result.total) {
-            commit('setRegistry', { type: instanceConfig.registryName, registry: [] })
-          }
-          let registry = (state.registry[registryName] && state.registry[registryName].items.length ? state.registry[registryName].items : new Array(result.total))
+        let fetches = Promise.all(pagesToFetch.map((page) => {
+          let opts = Object.assign(JSON.parse(JSON.stringify(state.instances[id])), { page })
+          return fetchPage.call(this, opts).then((result) => {
+            if (state.registry[registryName] && state.registry[registryName].items.length !== result.total) {
+              commit('setRegistry', { type: instanceConfig.registryName, registry: [] })
+            }
+            let registry = (state.registry[registryName] && state.registry[registryName].items.length ? state.registry[registryName].items : new Array(result.total))
 
-          result.data.map((item, i) => {
-            registry[indexStart + i] = item
+            result.data.map((item, i) => {
+              registry[indexStart + i] = item
+            })
+
+            commit('setRegistry', { type: instanceConfig.registryName, registry })
           })
-
-          commit('setRegistry', { type: instanceConfig.registryName, registry })
+        })).then(() => {
           commit('setInstanceConfig', Object.assign({}, state.instances[id], { id, loading: false }))
           commit('setCurrentRequest', null)
 
           if (!state.opts.prefetch) return
           dispatch('prefetchNextPage', id)
         })
-        commit('setCurrentRequest', req)
+
+        commit('setCurrentRequest', fetches)
       }
     },
     mutations: {
