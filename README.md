@@ -157,6 +157,31 @@ are being fetched again. If your arguments are not ready yet (maybe they get pas
 as a prop), the function should just return `null` and then the `fetchPage`
 function will not be called yet.
 
+### Range mode
+
+Sometimes (think an endless scrolling page) we'd just like to append new items to our list of results,
+not completely replace them. This is possible with the built-in range mode.
+
+To use it, you just specify a `pageFrom` and `pageTo` in `createInstance` instead of the `page`. But
+be aware that the results are still paged in the background using the `pageSize` you specified.
+So if you create a new instance, set `pageFrom` and `pageTo` both to `1`, then set the `pageTo` to
+`3`, the `fetchPage` function will be called twice. Once for the second and once for the third page.
+
+```javascript
+const { createInstance } = require('vuex-pagination')
+
+module.exports = {
+  computed: {
+    licenses: createInstance('licenses', {
+      pageFrom: 1,
+      pageSize: 10
+    })
+  }
+}
+```
+
+The `pageTo` can be omitted too.
+
 ### Pre-fetching and caching
 
 Internally, fetched items are being saved in specific registries - one for every combination
