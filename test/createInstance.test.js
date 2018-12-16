@@ -340,3 +340,26 @@ test('Range mode with prefetch', async function () {
 
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 })
+
+test('Range mode and load multiple pages', async function () {
+  let adapter = new TestAdapter()
+  adapter.nextResult = {
+    total: 30,
+    data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+
+  let wrapper = createWrapper('test10', { pageFrom: 1, pageSize: 10 })
+  createResource('test10', adapter.fetchPage.bind(adapter))
+
+  await nextTick()
+
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  wrapper.vm.test.pageTo = 3
+  expect(wrapper.vm.test.loading).toBe(true)
+  await nextTick()
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(3)
+
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+})
