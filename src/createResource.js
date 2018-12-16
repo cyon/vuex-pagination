@@ -5,6 +5,8 @@ const isEqual = require('lodash.isequal')
 const { getVueSet } = require('./util')
 
 module.exports = function (name, fetchPage, opts) {
+  let instanceCache = {}
+
   if (!opts) opts = {}
   let defaultOpts = {
     prefetch: false,
@@ -49,7 +51,9 @@ module.exports = function (name, fetchPage, opts) {
         }
 
         if (partition.includes(undefined)) {
-          partition = []
+          partition = instanceCache[id] || []
+        } else {
+          instanceCache[id] = partition
         }
 
         let length = state.registry[registryName].items.length
