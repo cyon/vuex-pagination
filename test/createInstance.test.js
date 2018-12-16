@@ -317,3 +317,26 @@ test('Base range functionality', async function () {
 
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 })
+
+test('Range mode with prefetch', async function () {
+  let adapter = new TestAdapter()
+  adapter.nextResult = {
+    total: 33,
+    data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+
+  let wrapper = createWrapper('test9', { pageFrom: 1, pageSize: 10 })
+  createResource('test9', adapter.fetchPage.bind(adapter), { prefetch: true })
+
+  await nextTick()
+
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  expect(wrapper.vm.test.pageTo).toBe(1)
+  wrapper.vm.test.pageTo = 2
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(2)
+
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+})
