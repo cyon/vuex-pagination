@@ -45,7 +45,7 @@ module.exports = function (name, fetchPage, opts) {
           partition = state.registry[registryName].items.slice(indexStart, indexStart + instanceConfig.pageSize)
         } else {
           let indexStart = instanceConfig.pageFrom * instanceConfig.pageSize - instanceConfig.pageSize
-          partition = state.registry[registryName].items.slice(indexStart, indexStart + ((instanceConfig.pageTo - instanceConfig.pageFrom) * instanceConfig.pageSize))
+          partition = state.registry[registryName].items.slice(indexStart, indexStart + ((instanceConfig.pageTo - instanceConfig.pageFrom + 1) * instanceConfig.pageSize))
         }
 
         if (partition.includes(undefined)) {
@@ -200,7 +200,8 @@ module.exports = function (name, fetchPage, opts) {
             return
           }
         } else {
-          pagesToFetch = new Array((indexEnd - indexStart) / instanceConfig.pageSize).fill(true).map((page, i) => instanceConfig[rangeMode ? 'pageFrom' : 'page'] + i)
+          let numPages = Math.ceil((indexEnd - indexStart) / instanceConfig.pageSize)
+          pagesToFetch = (new Array(numPages)).fill(true).map((page, i) => instanceConfig[rangeMode ? 'pageFrom' : 'page'] + i)
         }
 
         if (state.instances[id].args !== 'null' && !state.instances[id].args) {
@@ -215,8 +216,9 @@ module.exports = function (name, fetchPage, opts) {
             }
             let registry = (state.registry[registryName] && state.registry[registryName].items.length ? state.registry[registryName].items : new Array(result.total))
 
+            let pageStart = page * instanceConfig.pageSize - instanceConfig.pageSize
             result.data.map((item, i) => {
-              registry[indexStart + i] = item
+              registry[pageStart + i] = item
             })
 
             commit('setRegistry', { type: instanceConfig.registryName, registry })
@@ -250,6 +252,8 @@ module.exports = function (name, fetchPage, opts) {
           [opts.id]: {
             loading: opts.loading,
             page: opts.page,
+            pageFrom: opts.pageFrom,
+            pageTo: opts.pageTo,
             pageSize: opts.pageSize,
             args: opts.args || null,
             registryName
