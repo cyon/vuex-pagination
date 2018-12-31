@@ -38,7 +38,7 @@ module.exports.PaginationPlugin = {
     initializedStore = null
     Vue.mixin({
       created: function () {
-        if (!this._computedWatchers) return
+        if (!this._computedWatchers || !this.$store) return
         // We'll save instances whose modules have not been registered yet for later
         this.instanceQueue = this.instanceQueue || []
 
@@ -49,18 +49,16 @@ module.exports.PaginationPlugin = {
           }))
         }
 
-        if (this.$store) {
-          if (initializedStore !== this.$store._vm._uid) initializeStore(this.$store)
-          this.$store.subscribe((mutation) => {
-            if (mutation.type !== `${getRootModuleName()}/initializedResource`) return
+        if (initializedStore !== this.$store._vm._uid) initializeStore(this.$store)
+        this.$store.subscribe((mutation) => {
+          if (mutation.type !== `${getRootModuleName()}/initializedResource`) return
 
-            this.instanceQueue = this.instanceQueue.filter((instance) => {
-              if (instance.storeModuleName !== mutation.payload) return true
-              linkPaginatedResource(instance.storeModuleName, instance.instanceId, instance.initialOpts)
-              return false
-            })
+          this.instanceQueue = this.instanceQueue.filter((instance) => {
+            if (instance.storeModuleName !== mutation.payload) return true
+            linkPaginatedResource(instance.storeModuleName, instance.instanceId, instance.initialOpts)
+            return false
           })
-        }
+        })
 
         Object.keys(this._computedWatchers).forEach((key) => {
           if (!this[key] || !this[key]._meta || typeof this[key]._meta !== 'object') return
