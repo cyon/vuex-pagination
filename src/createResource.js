@@ -163,12 +163,12 @@ module.exports = function (name, fetchPage, opts) {
         let opts = Object.assign({}, state.instances[id])
         opts.page += 1
         let nextPageReq = fetchPage.call(this, opts).then((result) => {
-          let registry = state.registry[registryName].items
-          result.data.map((item, i) => {
-            registry[nextPageIndexStart + i] = item
+          let slice = []
+          result.data.map((item) => {
+            slice.push(item)
           })
 
-          commit('setRegistry', { type: instanceConfig.registryName, registry })
+          commit('setInRegistry', { type: instanceConfig.registryName, items: slice, indexStart: nextPageIndexStart })
           commit('setCurrentRequest', null)
         })
         commit('setCurrentRequest', nextPageReq)
@@ -218,14 +218,17 @@ module.exports = function (name, fetchPage, opts) {
             if (state.registry[registryName] && state.registry[registryName].items.length !== result.total) {
               commit('setRegistry', { type: instanceConfig.registryName, registry: [] })
             }
-            let registry = (state.registry[registryName] && state.registry[registryName].items.length ? state.registry[registryName].items : new Array(result.total))
+            if (!state.registry[registryName] || !state.registry[registryName].items.length) {
+              commit('setRegistry', { type: instanceConfig.registryName, registry: new Array(result.total) })
+            }
+            let slice = []
 
             let pageStart = page * instanceConfig.pageSize - instanceConfig.pageSize
             result.data.map((item, i) => {
-              registry[pageStart + i] = item
+              slice.push(item)
             })
 
-            commit('setRegistry', { type: instanceConfig.registryName, registry })
+            commit('setInRegistry', { type: instanceConfig.registryName, items: slice, indexStart: pageStart })
           })
         })).then(() => {
           commit('setInstanceConfig', Object.assign({}, state.instances[id], { id, loading: false }))
@@ -239,6 +242,12 @@ module.exports = function (name, fetchPage, opts) {
       }
     },
     mutations: {
+      setInRegistry: function (state, { type, items, indexStart }) {
+        items.map((item, i) => {
+          getVueSet()(state.registry[type].items, indexStart + i, item)
+        })
+        getVueSet()(state.registry[type], 'lastUpdated', Date.now())
+      },
       setRegistry: function (state, { type, registry }) {
         getVueSet()(state.registry[type], 'items', registry)
         getVueSet()(state.registry[type], 'lastUpdated', Date.now())
