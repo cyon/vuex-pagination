@@ -1,14 +1,12 @@
 /* eslint-env jest */
 const {
-  createResource
-} = require('../')
-const {
   TestAdapter,
   nextTick,
   sleep,
   createWrapper
 } = require('./utils')
 const {
+  createResource,
   createInstance
 } = require('../')
 
