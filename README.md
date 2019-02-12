@@ -216,6 +216,20 @@ const { createResource } = require('vuex-pagination')
 let controller = createResource('licenses', fetchLicensesPage, { cacheResources: 30 })
 ```
 
+### Controller
+
+The return value of `createResource` is a controller that allows you to trigger certain
+actions on the resource itself from store actions. You can also retrieve a controller
+to a defined resource using the `controller` function:
+
+```javascript
+const { controller, createResource } = require('vuex-pagination')
+
+let controller = createResource('books', fetchBooksPage)
+// ...or:
+let controller = controller('books')
+```
+
 ## Examples
 
 To better help you find out if `vuex-pagination` is the right fit for your project, here's a
