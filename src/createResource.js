@@ -82,8 +82,29 @@ module.exports = function (name, fetchPage, opts) {
 
         Object.keys(state.instances).map((id) => {
           commit('setInstanceConfig', Object.assign({}, state.instances[id], { loading: true }))
-          dispatch('fetchPage', id)
+
+          dispatch('fetchPage', Object.assign({}, state.instances[id], { id })).then(() => {
+            commit('setInstanceConfig', Object.assign({}, state.instances[id], { loading: false }))
+          })
         })
+      },
+      fetchRange: async function ({ commit, state, dispatch }, opts) {
+        let registryName = opts.args ? hash(opts.args) : 'default'
+        opts.args = opts.args || 'null'
+
+        let fetchPageOpts = Object.assign({}, opts, {
+          registryName
+        })
+
+        await dispatch('fetchPage', fetchPageOpts)
+
+        let rangeMode = !!opts.pageFrom
+
+        let indexStart = opts[rangeMode ? 'pageFrom' : 'page'] * opts.pageSize - opts.pageSize
+        let indexEnd = (rangeMode ? (opts.pageTo * opts.pageSize) : (indexStart + opts.pageSize))
+
+        let partition = state.registry[registryName].items.slice(indexStart, indexEnd)
+        return partition
       },
       cleanupRegistries: async function ({ commit, state }) {
         if (state.currentRequest) await state.currentRequest
@@ -113,7 +134,7 @@ module.exports = function (name, fetchPage, opts) {
 
         commit('removeRegistries', removableRegistryKeys.slice(removableRegistryKeys.length - cacheResources))
       },
-      createInstance: function ({ commit, dispatch }, opts) {
+      createInstance: function ({ commit, dispatch, state }, opts) {
         opts.loading = true
         if (opts.page) {
           opts.page = opts.page || 1
@@ -122,7 +143,10 @@ module.exports = function (name, fetchPage, opts) {
           opts.pageTo = opts.pageTo || 1
         }
         commit('setInstanceConfig', Object.assign({}, opts))
-        dispatch('fetchPage', opts.id)
+
+        dispatch('fetchPage', state.instances[opts.id]).then(() => {
+          commit('setInstanceConfig', Object.assign({}, opts, { loading: false }))
+        })
       },
       updateInstance: function ({ commit, state, dispatch }, opts) {
         let newInstance = Object.assign({}, state.instances[opts.id], opts)
@@ -139,16 +163,16 @@ module.exports = function (name, fetchPage, opts) {
         }
         opts.loading = true
         commit('setInstanceConfig', Object.assign({}, state.instances[opts.id], opts))
-        dispatch('fetchPage', opts.id)
-
-        dispatch('cleanupRegistries')
+        dispatch('fetchPage', state.instances[opts.id]).then(() => {
+          commit('setInstanceConfig', Object.assign({}, state.instances[opts.id], { id: opts.id, loading: false }))
+          dispatch('cleanupRegistries')
+        })
       },
       removeInstance: function ({ commit, state }) {
         // todo: remove instance
       },
-      prefetchNextPage: async function ({ commit, state }, id) {
+      prefetchNextPage: async function ({ commit, state }, instanceConfig) {
         if (state.currentRequest) await state.currentRequest
-        let instanceConfig = state.instances[id]
         let registryName = instanceConfig.registryName
         if (instanceConfig.page && (instanceConfig.page * instanceConfig.pageSize) >= state.registry[registryName].items.length) return
         if (instanceConfig.pageTo && (instanceConfig.pageTo * instanceConfig.pageSize) >= state.registry[registryName].items.length) return
@@ -160,7 +184,7 @@ module.exports = function (name, fetchPage, opts) {
 
         if (!nextPageFragment.includes(undefined)) return
 
-        let opts = Object.assign({}, state.instances[id])
+        let opts = Object.assign({}, instanceConfig)
         opts.page += 1
         let nextPageReq = fetchPage.call(this, opts).then((result) => {
           let slice = []
@@ -173,10 +197,9 @@ module.exports = function (name, fetchPage, opts) {
         })
         commit('setCurrentRequest', nextPageReq)
       },
-      fetchPage: async function ({ commit, dispatch, state }, id) {
+      fetchPage: async function ({ commit, dispatch, state }, instanceConfig) {
         if (state.currentRequest) await state.currentRequest
 
-        let instanceConfig = state.instances[id]
         let registryName = instanceConfig.registryName
         let rangeMode = !!instanceConfig.pageFrom
 
@@ -193,13 +216,11 @@ module.exports = function (name, fetchPage, opts) {
 
             return instanceConfig[rangeMode ? 'pageFrom' : 'page'] + i
           }).filter(Boolean)
-
           if (pagesToFetch.length === 0) {
-            commit('setInstanceConfig', Object.assign({}, state.instances[id], { id, loading: false }))
             commit('setCurrentRequest', null)
 
             if (!state.opts.prefetch) return
-            dispatch('prefetchNextPage', id)
+            dispatch('prefetchNextPage', instanceConfig)
 
             return
           }
@@ -208,12 +229,12 @@ module.exports = function (name, fetchPage, opts) {
           pagesToFetch = (new Array(numPages)).fill(true).map((page, i) => instanceConfig[rangeMode ? 'pageFrom' : 'page'] + i)
         }
 
-        if (state.instances[id].args !== 'null' && !state.instances[id].args) {
+        if (instanceConfig.args !== 'null' && !instanceConfig.args) {
           return
         }
 
         let fetches = Promise.all(pagesToFetch.map((page) => {
-          let opts = Object.assign(JSON.parse(JSON.stringify(state.instances[id])), { page })
+          let opts = Object.assign(JSON.parse(JSON.stringify(instanceConfig)), { page })
           return fetchPage.call(this, opts).then((result) => {
             if (state.registry[registryName] && state.registry[registryName].items.length !== result.total) {
               commit('setRegistry', { type: instanceConfig.registryName, registry: [] })
@@ -231,14 +252,14 @@ module.exports = function (name, fetchPage, opts) {
             commit('setInRegistry', { type: instanceConfig.registryName, items: slice, indexStart: pageStart })
           })
         })).then(() => {
-          commit('setInstanceConfig', Object.assign({}, state.instances[id], { id, loading: false }))
           commit('setCurrentRequest', null)
 
           if (!state.opts.prefetch) return
-          dispatch('prefetchNextPage', id)
+          dispatch('prefetchNextPage', instanceConfig)
         })
 
         commit('setCurrentRequest', fetches)
+        return fetches
       }
     },
     mutations: {
