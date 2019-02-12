@@ -102,4 +102,7 @@ test('Using controller', async function () {
   }
   results = await controller.fetchRange({ page: 2, pageSize: 5 })
   expect(results).toEqual([6, 7])
+
+  results = await controller.fetchRange({ pageFrom: 1, pageTo: 2, pageSize: 5 })
+  expect(results).toEqual([1, 2, 3, 4, 5, 6, 7])
 })
