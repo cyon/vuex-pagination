@@ -2,8 +2,6 @@
 const {
   TestAdapter,
   nextTick
-  // sleep,
-  // createWrapper
 } = require('./utils')
 const {
   createInstance,
