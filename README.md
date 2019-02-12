@@ -230,6 +230,24 @@ let controller = createResource('books', fetchBooksPage)
 let controller = controller('books')
 ```
 
+To re-fetch a specific resource (for example to poll changes) you can use the controller's
+`refresh` function.
+
+If you want to work with paginated items inside your store you might want to use
+the `fetchRange` function:
+
+```javascript
+const { controller } = require('vuex-pagination')
+
+controller('books').fetchRange({
+  pageFrom: 1,
+  pageTo: 5,
+  pageSize: 10
+}).then((items) => {
+  console.log(items)
+})
+```
+
 ## Examples
 
 To better help you find out if `vuex-pagination` is the right fit for your project, here's a
