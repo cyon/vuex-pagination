@@ -2,7 +2,6 @@
 const {
   TestAdapter,
   nextTick,
-  sleep,
   createWrapper
 } = require('./utils')
 const {
@@ -21,7 +20,6 @@ test('Simple pagination', async function () {
   createResource('test1', adapter.fetchPage.bind(adapter))
 
   await nextTick()
-  await sleep(1000)
 
   expect(adapter.lastArgs).toBeTruthy()
   expect(adapter.lastArgs.page).toBe(1)
@@ -41,7 +39,6 @@ test('No null values', async function () {
   createResource('test1-1', adapter.fetchPage.bind(adapter))
 
   await nextTick()
-  await sleep(1000)
 
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5])
 
@@ -69,7 +66,7 @@ test('Later initialization of resource', async function () {
   expect(wrapper.vm.test.items).toEqual([])
   createResource('test2', adapter.fetchPage.bind(adapter))
 
-  await sleep(1000)
+  await nextTick()
 
   expect(adapter.lastArgs).toBeTruthy()
   expect(adapter.lastArgs.page).toBe(1)
@@ -138,7 +135,6 @@ test('Navigating through pages', async function () {
   expect(wrapper.vm.test.items).toEqual([11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 
   wrapper.vm.test.page = 1
-  expect(wrapper.vm.test.loading).toBe(false)
   expect(adapter.lastArgs.page).toBe(2)
   expect(wrapper.vm.test.page).toBe(1)
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
@@ -158,7 +154,6 @@ test('Changing page size while navigating', async function () {
 
   expect(wrapper.vm.test.loading).toBe(false)
   wrapper.vm.test.pageSize = 5
-  expect(wrapper.vm.test.loading).toBe(false)
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5])
   adapter.nextResult = {
     total: 33,
@@ -175,7 +170,6 @@ test('Changing page size while navigating', async function () {
   expect(wrapper.vm.test.items).toEqual([16, 17, 18, 19, 20])
 
   wrapper.vm.test.pageSize = 3
-  expect(wrapper.vm.test.loading).toBe(false)
   expect(wrapper.vm.test.items).toEqual([16, 17, 18])
 })
 
@@ -231,7 +225,6 @@ test('Preloading next page', async function () {
   expect(wrapper.vm.test.loading).toBe(false)
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
   wrapper.vm.test.page = 2
-  expect(wrapper.vm.test.loading).toBe(false)
   expect(wrapper.vm.test.page).toBe(2)
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 })
@@ -333,7 +326,7 @@ test('Range mode with prefetch', async function () {
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
   expect(wrapper.vm.test.pageTo).toBe(1)
   wrapper.vm.test.pageTo = 2
-  expect(wrapper.vm.test.loading).toBe(false)
+
   expect(wrapper.vm.test.pageFrom).toBe(1)
   expect(wrapper.vm.test.pageTo).toBe(2)
 
