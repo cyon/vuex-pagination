@@ -114,8 +114,8 @@ function createController (name) {
     refresh: function () {
       return _store.dispatch([getRootModuleName(), name, 'refresh'].join('/'))
     },
-    refreshSingle: function (id) {
-      return _store.dispatch([getRootModuleName(), name, 'refreshSingle'].join('/'), id)
+    fetchRange: function (opts) {
+      return _store.dispatch([getRootModuleName(), name, 'fetchRange'].join('/'), opts)
     }
   }
 }
