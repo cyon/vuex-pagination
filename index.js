@@ -38,6 +38,7 @@ module.exports.PaginationPlugin = {
     initializedStore = null
     Vue.mixin({
       created: function () {
+        if (this.$store && initializedStore !== this.$store._vm._uid) initializeStore(this.$store)
         if (!this._computedWatchers || !this.$store) return
         // We'll save instances whose modules have not been registered yet for later
         this.instanceQueue = this.instanceQueue || []
@@ -49,7 +50,6 @@ module.exports.PaginationPlugin = {
           }))
         }
 
-        if (initializedStore !== this.$store._vm._uid) initializeStore(this.$store)
         this.$store.subscribe((mutation) => {
           if (mutation.type !== `${getRootModuleName()}/initializedResource`) return
 
