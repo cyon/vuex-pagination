@@ -39,6 +39,7 @@ module.exports = function (rootModuleName, title, opts) {
       if (property === '_meta') {
         return {
           id: instanceId,
+          fullId: this._uid + instanceId,
           storeModule: title,
           initialArgs
         }
