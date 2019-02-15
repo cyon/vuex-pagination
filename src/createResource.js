@@ -270,6 +270,7 @@ module.exports = function (name, fetchPage, opts) {
         getVueSet()(state.registry[type], 'lastUpdated', Date.now())
       },
       setRegistry: function (state, { type, registry }) {
+        if (!state.registry[type]) state.registry[type] = {}
         getVueSet()(state.registry[type], 'items', registry)
         getVueSet()(state.registry[type], 'lastUpdated', Date.now())
       },
