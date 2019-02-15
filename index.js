@@ -116,6 +116,23 @@ function createController (name) {
     },
     fetchRange: function (opts) {
       return _store.dispatch([getRootModuleName(), name, 'fetchRange'].join('/'), opts)
+    },
+    on: function (event, cb) {
+      let possibleEvents = ['setInstanceConfig', 'setInRegistry']
+      if (!possibleEvents.includes(event)) {
+        throw Error(`Event "${event}" is not valid. Valid mutations are: ${possibleEvents.join(', ')}`)
+      }
+
+      _store.subscribe((mutation) => {
+        let mutationPrefix = [getRootModuleName(), name].join('/')
+        if (mutation.type.indexOf(mutationPrefix) !== 0) return
+
+        let mutationType = mutation.type.replace(mutationPrefix + '/', '')
+        if (mutationType === event) cb(mutation.payload)
+      })
+    },
+    instance: function (id) {
+      return _store.getters[[getRootModuleName(), name, 'instance'].join('/')](id)
     }
   }
 }
