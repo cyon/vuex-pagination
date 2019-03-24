@@ -33,7 +33,7 @@ module.exports = function (name, fetchPage, opts) {
     },
     getters: {
       instance: (state) => (id) => {
-        if (!state.instances[id]) {
+        if (!state || !state.instances[id]) {
           return null
         }
 
