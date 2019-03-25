@@ -38,7 +38,7 @@ module.exports.PaginationPlugin = {
     initializedStore = null
     Vue.mixin({
       created: function () {
-        if (this.$store && initializedStore !== this.$store._vm._uid) initializeStore(this.$store)
+        if (this.$store && !initializedStore) initializeStore(this.$store)
         if (!this._computedWatchers || !this.$store) return
         // We'll save instances whose modules have not been registered yet for later
         this.instanceQueue = this.instanceQueue || []
