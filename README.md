@@ -23,9 +23,9 @@ To use it in your application you'll need to install the package as
 a Vue plugin. This can be done as follows:
 
 ```javascript
-const Vue = require('vue/dist/vue.common.js')
-const Vuex = require('vuex')
-const { PaginationPlugin } = require('vuex-pagination')
+import Vue from 'vue'
+import Vuex from 'vuex'
+import { PaginationPlugin } from 'vuex-pagination'
 
 Vue.use(Vuex)
 Vue.use(PaginationPlugin)
@@ -60,9 +60,9 @@ page was fetched and should return an object:
 When you have this function handy you can finally create the Vuex resource like this:
 
 ```javascript
-const { createResource } = require('vuex-pagination')
+import { createResource } from 'vuex-pagination'
 
-let controller = createResource('licenses', fetchLicensesPage)
+const controller = createResource('licenses', fetchLicensesPage)
 ```
 
 The first parameter to the `createResource` function is the title of the resource and
@@ -81,10 +81,10 @@ once.
 An instance can be created like this:
 
 ```javascript
-const { createInstance } = require('vuex-pagination')
+import { createInstance } from 'vuex-pagination'
 
 // this is our Vue component
-module.exports = {
+export default {
   computed: {
     licenses: createInstance('licenses', {
       page: 1,
@@ -130,9 +130,9 @@ This can be done with the `args` function inside the `createInstance`
 call:
 
 ```javascript
-const { createInstance } = require('vuex-pagination')
+import { createInstance } from 'vuex-pagination'
 
-module.exports = {
+export default {
   data () {
     return {
       query: ''
@@ -168,9 +168,9 @@ So if you create a new instance, set `pageFrom` and `pageTo` both to `1`, then s
 `3`, the `fetchPage` function will be called twice. Once for the second and once for the third page.
 
 ```javascript
-const { createInstance } = require('vuex-pagination')
+import { createInstance } from 'vuex-pagination'
 
-module.exports = {
+export default {
   computed: {
     licenses: createInstance('licenses', {
       pageFrom: 1,
@@ -194,9 +194,9 @@ already in the registry. Using `prefetch` you can also ensure that the data for 
 page is already present:
 
 ```javascript
-const { createResource } = require('vuex-pagination')
+import { createResource } from 'vuex-pagination'
 
-let controller = createResource('licenses', fetchLicensesPage, { prefetch: true })
+const controller = createResource('licenses', fetchLicensesPage, { prefetch: true })
 ```
 
 If you have an instance where your user navigates to the second page, we'll already
@@ -211,9 +211,9 @@ we garbage collect those automatically. The amount of unused registries is 20 pe
 but you can set this value yourself like this:
 
 ```javascript
-const { createResource } = require('vuex-pagination')
+import { createResource } from 'vuex-pagination'
 
-let controller = createResource('licenses', fetchLicensesPage, { cacheResources: 30 })
+const controller = createResource('licenses', fetchLicensesPage, { cacheResources: 30 })
 ```
 
 ### Controller
@@ -223,11 +223,11 @@ actions on the resource itself from store actions. You can also retrieve a contr
 to a defined resource using the `controller` function:
 
 ```javascript
-const { controller, createResource } = require('vuex-pagination')
+import { controller, createResource } from 'vuex-pagination'
 
-let controller = createResource('books', fetchBooksPage)
+const controller = createResource('books', fetchBooksPage)
 // ...or:
-let controller = controller('books')
+const controller = controller('books')
 ```
 
 To re-fetch a specific resource (for example to poll changes) you can use the controller's
@@ -237,7 +237,7 @@ If you want to work with paginated items inside your store you might want to use
 the `fetchRange` function:
 
 ```javascript
-const { controller } = require('vuex-pagination')
+import { controller } from 'vuex-pagination'
 
 controller('books').fetchRange({
   pageFrom: 1,
@@ -286,7 +286,7 @@ also be outside of it.
   </div>
 </template>
 <script>
-module.exports = {
+export default {
   computed: {
     books: createInstance('books', { page: 1, pageSize: 10 })
   }
@@ -329,7 +329,7 @@ this you'd need an `args` function.
   </div>
 </template>
 <script>
-module.exports = {
+export default {
   data () {
     return { query: '' }
   },
