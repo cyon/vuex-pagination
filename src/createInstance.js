@@ -29,6 +29,7 @@ module.exports = function (rootModuleName, title, opts) {
     this.$watch(argsFn, (args) => {
       store.dispatch([rootModuleName, title, 'updateInstance'].join('/'), {
         id: this._uid + instanceId,
+        page: 1,
         args
       })
     })
