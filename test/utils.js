@@ -44,11 +44,11 @@ module.exports.sleep = function sleep (ms) {
   })
 }
 
-module.exports.createWrapper = function createWrapper (resourceName, args, component) {
+module.exports.createWrapper = function createWrapper (resourceName, args, component, options) {
   let localVue = createLocalVue()
-
+  let pluginOptions = options || {}
   localVue.use(Vuex)
-  localVue.use(PaginationPlugin)
+  localVue.use(PaginationPlugin, pluginOptions)
 
   component = component || {
     computed: {

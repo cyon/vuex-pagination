@@ -35,11 +35,14 @@ function initializeStore (store) {
 module.exports.PaginationPlugin = {
   install: function (Vue, opts) {
     setVueSet(Vue.set.bind(Vue))
+    const enforceInstanceMarkers = opts ? opts.enforceInstanceMarkers : false
     initializedStore = null
     Vue.mixin({
       created: function () {
         if (this.$store && !initializedStore) initializeStore(this.$store)
         if (!this._computedWatchers || !this.$store) return
+        if (enforceInstanceMarkers && this._data && !this._data._enableVuexPagination) return
+
         // We'll save instances whose modules have not been registered yet for later
         this.instanceQueue = this.instanceQueue || []
 

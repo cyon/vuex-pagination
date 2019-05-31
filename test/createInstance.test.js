@@ -355,3 +355,72 @@ test('Range mode and load multiple pages', async function () {
 
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 })
+test('Filter components using marker enforceInstanceMarkers - ignoring components', async function () {
+  let adapter = new TestAdapter()
+  adapter.nextResult = {
+    total: 3,
+    data: [1, 2, 3]
+  }
+  let resourceName = 'marker-negative'
+  let args = {page: 1, pageSize: 10}
+  let component = {
+    data () {
+      return {
+        _enableVuexPagination: false
+      }
+    },
+    computed: {
+      test: createInstance(resourceName, args)
+    },
+    render (h) {
+      return h('div')
+    }
+  }
+
+  let wrapper = createWrapper(resourceName, args, component, {
+    enforceInstanceMarkers: true
+  })
+  createResource(resourceName, adapter.fetchPage.bind(adapter))
+
+  await nextTick()
+
+  expect(adapter.lastArgs).toBeFalsy()
+
+  expect(wrapper.vm.test.items).toEqual([])
+})
+
+test('Filter components using marker enforceInstanceMarkers - enable marked components', async function () {
+  let adapter = new TestAdapter()
+  adapter.nextResult = {
+    total: 3,
+    data: [1, 2, 3]
+  }
+  let resourceName = 'marker-positive'
+  let args = {page: 1, pageSize: 10}
+  let component = {
+    data () {
+      return {
+        _enableVuexPagination: true
+      }
+    },
+    computed: {
+      test: createInstance(resourceName, args)
+    },
+    render (h) {
+      return h('div')
+    }
+  }
+
+  let wrapper = createWrapper(resourceName, args, component, {
+    enforceInstanceMarkers: true
+  })
+  createResource(resourceName, adapter.fetchPage.bind(adapter))
+
+  await nextTick()
+
+  expect(adapter.lastArgs).toBeTruthy()
+  expect(adapter.lastArgs.page).toBe(1)
+  expect(adapter.lastArgs.pageSize).toBe(10)
+
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3])
+})
