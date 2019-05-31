@@ -7,6 +7,8 @@ module.exports = function (rootModuleName, title, opts) {
   if (opts.pageFrom || opts.pageTo) rangeMode = true
 
   return function () {
+    // eslint-disable-next-line
+    const VUEX_PAGINATION_INSTANCE = true
     let store = this.$store
 
     let defaults = {
