@@ -355,3 +355,40 @@ test('Range mode and load multiple pages', async function () {
 
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 })
+
+test('Don\'t touch computed getters', async function () {
+  let adapter = new TestAdapter()
+  adapter.nextResult = {
+    total: 33,
+    data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+
+  let component = {
+    data () {
+      return {
+        counter: 1
+      }
+    },
+    computed: {
+      dontExecuteMe () {
+        throw new Error('This should not be executed')
+      },
+      test: createInstance('test11', {
+        page: 1,
+        pageSize: 10,
+        args () {
+          return { counter: this.counter }
+        }
+      })
+    },
+    render (h) {
+      return h('div')
+    }
+  }
+
+  let wrapper = createWrapper('test11', { page: 1, pageSize: 10 }, component)
+  createResource('test11', adapter.fetchPage.bind(adapter))
+
+  expect(wrapper.vm.test.loading).toBe(true)
+  await nextTick()
+})
