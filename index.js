@@ -61,6 +61,7 @@ module.exports.PaginationPlugin = {
         })
 
         Object.keys(this._computedWatchers).forEach((key) => {
+          if (!this._computedWatchers[key].expression.includes('VUEX_PAGINATION_INSTANCE')) return
           if (!this[key] || !this[key]._meta || typeof this[key]._meta !== 'object') return
 
           let meta = this[key]._meta
