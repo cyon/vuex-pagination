@@ -34,7 +34,7 @@ module.exports = function (rootModuleName, title, opts) {
         page: 1,
         args
       })
-    })
+    }, { deep: true })
 
     let initialArgs = argsFn()
 
