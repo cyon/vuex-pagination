@@ -10,6 +10,7 @@ var _store = null
 
 function initializeStore (store) {
   _store = store
+  initializedStore = true
   store.registerModule(getRootModuleName(), {
     namespaced: true,
     actions: {
@@ -27,8 +28,6 @@ function initializeStore (store) {
   initialResources.map((args) => {
     store.dispatch([getRootModuleName(), 'createResource'].join('/'), args)
   })
-
-  initializedStore = true
 }
 
 // vue-plugin
