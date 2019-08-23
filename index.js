@@ -28,7 +28,7 @@ function initializeStore (store) {
     store.dispatch([getRootModuleName(), 'createResource'].join('/'), args)
   })
 
-  initializedStore = store._vm._uid
+  initializedStore = true
 }
 
 // vue-plugin
