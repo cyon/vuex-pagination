@@ -1,23 +1,42 @@
 # vuex-pagination
 
-
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![build status](https://secure.travis-ci.org/cyon/vuex-pagination.png)](http://travis-ci.org/cyon/vuex-pagination)
 
+Library that makes it magnitudes easier to integrate paginated resources from an API
+(REST, GraphQL, or anything else) into your Vue application.
 
-This project strives to be the perfect fit for any paginated resource
-that needs to be integrated into a Vuex application and can serve many
-different use cases.
+## How does it work?
 
-## Usage
+Resources in `vuex-pagination` directly map to their corresponding resources in the API. The
+resource itself "lives" in the Vuex store and manages the already fetched data.
 
-The module can be installed using [npm](https://npmjs.com):
+To initialize a new resource you have to provide a `fetchPage` function. This function
+receives some parameters like the current page and the page size and fetches the data from the
+API.
+
+To display data in your Vue components, you can initialize instances. There can be multiple
+instances for every resource and all of them can have a different state (current page, page size
+etc).
+
+![Visualisation](visualisation.png)
+
+Because of this approach, `vuex-pagination` is suited regardless of the used API. It can also
+work with data read directly from the file system, for example in Electron applications.
+
+## Installation
 
 ```bash
-npm install vuex-pagination --save
+// Using npm:
+npm install vuex-pagination
+
+// Or using Yarn:
+yarn add vuex-pagination
 ```
 
-## Initializing
+If you don't have already, make sure to also install the `vuex` package.
+
+## Usage
 
 To use it in your application you'll need to install the package as
 a Vue plugin. This can be done as follows:
@@ -31,21 +50,26 @@ Vue.use(Vuex)
 Vue.use(PaginationPlugin)
 ```
 
-That's all you need to get started!
+**Warning:** Vuex is needed for the plugin to work. It needs to be initialized
+even if you don't use it directly yourself.
 
-### The store part
+### `createResource(name, fetchPage, opts)`
 
-If there is a resource on your (RESTful) API that you want to access,
-all you need is a `fetchPage()` function. It takes only one `opts` parameter
-which has the following information:
+| Parameter           | Type     | Required / Default Value | Description                         |
+|---------------------|----------|--------------------------|-------------------------------------|
+| name                | string   | required                 | Name of the resource                |
+| fetchPage           | function | required                 | Function to fetch a single page     |
+| opts                | object   | null                     | Optional arguments                  |
+| opts.prefetch       | boolean  | false                    | Automatically prefetch items        |
+| opts.cacheResources | number   | 20                       | How many resources should be cached |
 
-```javascript
-{
-  page: 1, // the current page
-  pageSize: 10, // how many items are on one page
-  args: {} // additional arguments, we'll get to that later
-}
-```
+The `fetchPage` function receives a single `opts` parameter that looks like the following:
+
+| Parameter     | Type   | Description                                             |
+|---------------|--------|---------------------------------------------------------|
+| opts.page     | number | Page to fetch                                           |
+| opts.pageSize | number | Selected page size                                      |
+| opts.args     | object | Optional arguments that can be passed from the instance |
 
 The `fetchPage` function has to return a Promise which fulfills after the
 page was fetched and should return an object:
@@ -57,22 +81,44 @@ page was fetched and should return an object:
 }
 ```
 
-When you have this function handy you can finally create the Vuex resource like this:
+<details>
+  <summary>Show example</summary>
 
-```javascript
+  The `createResource` is usually done in your store logic. If you didn't use Vuex directly
+  it can also be where you're initializing your Vue application.
+
+  Here is an example of how a resource could be initialized:
+
+  ```javascript
 import { createResource } from 'vuex-pagination'
 
-const controller = createResource('licenses', fetchLicensesPage)
-```
+async function fetchUsers (opts) {
+  let users = window.fetch(`/users?page=${opts.page}&limit=${opts.pageSize}`)
+    .then((response) => response.json())
 
-The first parameter to the `createResource` function is the title of the resource and
-will be used to access it from the instances. The function returns a controller object
-with which you then can do some operations on the resources from the Vuex store.
+  return {
+    total: users.total,
+    data: users.items
+  }
+}
 
-### Instance(s)
+createResource('users', fetchUsers, {
+  prefetch: true
+})
+  ```
+</details>
 
-The really interesting part is displaying those resources and that's what we're gonna do
-now!
+### `createInstance(name, opts)`
+
+| Parameter     | Type     | Required / Default Value | Description                                             |
+|---------------|----------|--------------------------|---------------------------------------------------------|
+| name          | string   | required                 | Name of the resource                                    |
+| opts          | object   | required                 | Options                                                 |
+| opts.page     | number   | 1                        | Initial page                                            |
+| opts.pageFrom | number   | null                     | Range mode: start page                                  |
+| opts.pageTo   | number   | null                     | Range mode: last page                                   |
+| opts.pageSize | number   | 20                       | Initial page size                                       |
+| opts.args     | function | undefined                | Function that returns an object of additional arguments |
 
 For every resource there can be one or many instances. That means that this data can be
 shown on different parts of your application and we'll still just download everything
@@ -86,7 +132,7 @@ import { createInstance } from 'vuex-pagination'
 // this is our Vue component
 export default {
   computed: {
-    licenses: createInstance('licenses', {
+    licenses: createInstance('users', {
       page: 1,
       pageSize: 10
     })
@@ -94,32 +140,84 @@ export default {
 }
 ```
 
-This is pretty cool - you can have multiple instances on the same data but they are all
-on different pages (or maybe define a different page size). The data then can be shown
-like this:
+The instance has the following properties:
 
-```vue
+| Property   | Type    | Description                                        | Reactive |
+|------------|---------|----------------------------------------------------|----------|
+| page       | number  | Current page                                       | true     |
+| pageSize   | number  | Selected page size                                 | true     |
+| items      | array   | Items for the current page                         | false    |
+| total      | number  | Total amount of items                              | false    |
+| totalPages | number  | Total number of pages (based on current page size) | false    |
+| loading    | boolean | Whether data is being fetched currently            | false    |
+
+The `items` property is your data which can be displayed then.
+
+<details>
+  <summary>See example</summary>
+
+  ```vue
 <template>
-  <li v-for="license in licenses.items" :key="license.id" class="license">
-    <span class="name">{{license.name}}</span>
+  <li v-for="user in users.items" :key="user.id" class="user">
+    <span class="name">{{user.name}}</span>
   </li>
 </template>
-```
+  ```
+</details>
 
 The `page` and `pageSize` attributes are reactive, it means you can use them as
 [`v-model`](https://vuejs.org/v2/api/#v-model) in your component - or just set them
 programmatically.
 
-```vue
+<details>
+  <summary>See example</summary>
+
+  ```vue
 <select v-model="licenses.pageSize">
   <option :value="5">5</option>
   <option :value="10">10</option>
   <option :value="20">20</option>
 </select>
-```
+  ```
+</details>
 
-There is also a `loading` attribute on the pagination instance which indicates
-whether new resources are being fetched right now.
+#### Standard vs range mode
+
+In the standard mode you always get a single page while in the range mode you'll see
+a list of pages at once. This can be especially useful when you're implementing an endless
+scrolling feature.
+
+But be aware that the results are still paged in the background using the `pageSize` you specified.
+So if you create a new instance, set `pageFrom` and `pageTo` both to `1`, then set the `pageTo` to
+`3`, the `fetchPage` function will be called twice. Once for the second and once for the third page.
+
+<details>
+  <summary>See example</summary>
+
+  ```vue
+<template>
+  <div>
+    <ul>
+      <li v-for="user in users.items" :key="user.id">{{ user.name }}</li>
+    </ul>
+    <a @click.prevent="users.pageTo += 1">Show more...</a>
+  </div>
+</template>
+<script>
+import { createInstance } from 'vuex-pagination'
+
+export default {
+  computed: {
+    users: createInstance('users', {
+      pageFrom: 1,
+      pageTo: 1,
+      pageSize: 30
+    })
+  }
+}
+</script>
+  ```
+</details>
 
 ### Passing arguments
 
