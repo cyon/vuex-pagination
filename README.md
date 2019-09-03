@@ -53,6 +53,8 @@ Vue.use(PaginationPlugin)
 **Warning:** Vuex is needed for the plugin to work. It needs to be initialized
 even if you don't use it directly yourself.
 
+<br>
+
 ### `createResource(name, fetchPage, opts)`
 
 | Parameter           | Type     | Required / Default Value | Description                         |
@@ -107,6 +109,8 @@ createResource('users', fetchUsers, {
 })
   ```
 </details>
+
+<br>
 
 ### `createInstance(name, opts)`
 
@@ -181,6 +185,8 @@ programmatically.
   ```
 </details>
 
+<br>
+
 #### Standard vs range mode
 
 In the standard mode you always get a single page while in the range mode you'll see
@@ -219,6 +225,8 @@ export default {
   ```
 </details>
 
+<br>
+
 #### Passing arguments
 
 Often you'll have to pass different kinds of arguments or parameters to a
@@ -255,6 +263,8 @@ are being fetched again. If your arguments are not ready yet (maybe they get pas
 as a prop), the function should just return `null` and then the `fetchPage`
 function will not be called yet.
 
+<br>
+
 ### Pre-fetching and caching
 
 Internally, fetched items are being saved in specific registries - one for every combination
@@ -288,6 +298,8 @@ import { createResource } from 'vuex-pagination'
 
 const controller = createResource('licenses', fetchLicensesPage, { cacheResources: 30 })
 ```
+
+<br>
 
 ### Controller
 
