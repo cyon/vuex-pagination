@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.3.0
+## v1.3.0
 
 - Introduced a changelog 🎉
 - Better documentation
