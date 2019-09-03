@@ -177,7 +177,7 @@ programmatically.
   <summary>See example</summary>
 
   ```vue
-<select v-model="licenses.pageSize">
+<select v-model="users.pageSize">
   <option :value="5">5</option>
   <option :value="10">10</option>
   <option :value="20">20</option>
@@ -245,7 +245,7 @@ export default {
     }
   },
   computed: {
-    licenses: createInstance('licenses', {
+    licenses: createInstance('users', {
       page: 1,
       pageSize: 10,
       args () {
@@ -279,7 +279,7 @@ page is already present:
 ```javascript
 import { createResource } from 'vuex-pagination'
 
-const controller = createResource('licenses', fetchLicensesPage, { prefetch: true })
+const controller = createResource('users', fetchLicensesPage, { prefetch: true })
 ```
 
 If you have an instance where your user navigates to the second page, we'll already
@@ -296,7 +296,7 @@ but you can set this value yourself like this:
 ```javascript
 import { createResource } from 'vuex-pagination'
 
-const controller = createResource('licenses', fetchLicensesPage, { cacheResources: 30 })
+const controller = createResource('users', fetchUsersPage, { cacheResources: 30 })
 ```
 
 <br>
@@ -310,9 +310,9 @@ to a defined resource using the `controller` function:
 ```javascript
 import { controller, createResource } from 'vuex-pagination'
 
-const controller = createResource('books', fetchBooksPage)
+const controller = createResource('users', fetchUsersPage)
 // ...or:
-const controller = controller('books')
+const controller = controller('users')
 ```
 
 To re-fetch a specific resource (for example to poll changes) you can use the controller's
@@ -324,7 +324,7 @@ the `fetchRange` function:
 ```javascript
 import { controller } from 'vuex-pagination'
 
-controller('books').fetchRange({
+controller('users').fetchRange({
   pageFrom: 1,
   pageTo: 5,
   pageSize: 10
