@@ -1,6 +1,6 @@
 {
   "name": "vuex-pagination",
-  "version": "1.2.13",
+  "version": "1.3.0",
   "description": "Use paginated resources in your Vue/Vuex app with ease",
   "main": "src/index.js",
   "scripts": {
