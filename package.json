@@ -22,6 +22,7 @@
   "author": "Max Gfeller <mg@cyon.ch>",
   "license": "ISC",
   "devDependencies": {
+    "@vue/cli-service": "^3.11.0",
     "@vue/test-utils": "^1.0.0-beta.29",
     "jest": "^24.8.0",
     "standard": "^11.0.1",
