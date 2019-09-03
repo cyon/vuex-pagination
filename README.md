@@ -301,18 +301,18 @@ const controller = createResource('users', fetchUsersPage, { cacheResources: 30 
 
 <br>
 
-### Controller
+### Usage in Vuex store
 
 The return value of `createResource` is a controller that allows you to trigger certain
 actions on the resource itself from store actions. You can also retrieve a controller
-to a defined resource using the `controller` function:
+to a defined resource using the `resource` function:
 
 ```javascript
-import { controller, createResource } from 'vuex-pagination'
+import { resource, createResource } from 'vuex-pagination'
 
-const controller = createResource('users', fetchUsersPage)
+const resource = createResource('users', fetchUsersPage)
 // ...or:
-const controller = controller('users')
+const resource = resource('users')
 ```
 
 To re-fetch a specific resource (for example to poll changes) you can use the controller's
@@ -322,9 +322,9 @@ If you want to work with paginated items inside your store you might want to use
 the `fetchRange` function:
 
 ```javascript
-import { controller } from 'vuex-pagination'
+import { resource } from 'vuex-pagination'
 
-controller('users').fetchRange({
+resource('users').fetchRange({
   pageFrom: 1,
   pageTo: 5,
   pageSize: 10
@@ -332,6 +332,9 @@ controller('users').fetchRange({
   console.log(items)
 })
 ```
+
+**Please note:** In previous versions the `resource` function was called `controller`. This
+is deprecated but will continue to work in `1.x` versions of this package.
 
 ## Examples
 

@@ -109,6 +109,10 @@ module.exports.controller = function (name) {
   return createController(name)
 }
 
+module.exports.resource = function (name) {
+  return createController(name)
+}
+
 function createController (name) {
   return {
     refresh: function () {
