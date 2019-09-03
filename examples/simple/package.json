@@ -1,23 +1,5 @@
 {
-  "name": "@vue-paginated-resource/example",
-  "version": "0.0.0",
-  "description": "Example using vuex",
-  "main": "index.js",
   "scripts": {
-    "build": "browserify app.js -t brfs -t vueify -vd -o app.bundle.js"
-  },
-  "author": "Max Gfeller <mg@cyon.ch>",
-  "license": "UNLICENSED",
-  "private": true,
-  "dependencies": {
-    "vue": "^2.5.16",
-    "vuex": "^3.0.1"
-  },
-  "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-preset-es2015": "^6.24.1",
-    "brfs": "^2.0.1",
-    "browserify": "^16.2.3",
-    "vueify": "^9.4.1"
+    "serve": "../../node_modules/.bin/vue-cli-service serve main.js"
   }
 }
