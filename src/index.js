@@ -1,7 +1,7 @@
-const createInstance = require('./src/createInstance')
-const { getRootModuleName } = require('./src/rootModuleName')
-const createResource = require('./src/createResource')
-const { setVueSet } = require('./src/util')
+const createInstance = require('./createInstance')
+const { getRootModuleName } = require('./rootModuleName')
+const createResource = require('./createResource')
+const { setVueSet } = require('./util')
 
 var initialResources = []
 var initializedStore = null
