@@ -337,6 +337,9 @@ controller('users').fetchRange({
 
 We prepared a few examples for different use-cases. These can be found in the `examples/` folder.
 
+If you cloned this repository, you can run the examples by navigating to the respective folder
+and running `npm run serve`.
+
 ## Tests
 
 Tests are implemented using [Jest](https://jestjs.io/) and
