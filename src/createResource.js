@@ -6,6 +6,7 @@ const { getVueSet } = require('./util')
 
 module.exports = function (name, fetchPage, opts) {
   let instanceCache = {}
+  let instanceConfigQueue = {}
 
   if (!opts) opts = {}
   let defaultOpts = {
@@ -136,6 +137,9 @@ module.exports = function (name, fetchPage, opts) {
       },
       createInstance: function ({ commit, dispatch, state }, opts) {
         opts.loading = true
+        let optsQueue = instanceConfigQueue[opts.id] || {}
+        Object.assign(opts, optsQueue)
+
         if (opts.page) {
           opts.page = opts.page || 1
         } else {
@@ -149,6 +153,10 @@ module.exports = function (name, fetchPage, opts) {
         })
       },
       updateInstance: function ({ commit, state, dispatch }, opts) {
+        if (!state.instances[opts.id]) {
+          instanceConfigQueue[opts.id] = opts
+          return
+        }
         let newInstance = Object.assign({}, state.instances[opts.id], opts)
         delete newInstance['id']
 
