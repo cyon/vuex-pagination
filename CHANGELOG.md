@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.1
+
+- Fixed a bug where updating an instance before it got initialized would fail
+
 ## v1.3.0
 
 - Introduced a changelog 🎉
