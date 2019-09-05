@@ -42,7 +42,7 @@ module.exports.PaginationPlugin = {
         // We'll save instances whose modules have not been registered yet for later
         this.instanceQueue = this.instanceQueue || []
 
-        let linkPaginatedResource = (storeModuleTitle, instanceId, initialOpts) => {
+        this.linkPaginatedResource = (storeModuleTitle, instanceId, initialOpts) => {
           let action = [getRootModuleName(), storeModuleTitle, 'createInstance'].join('/')
           this.$store.dispatch(action, Object.assign({}, initialOpts, {
             id: instanceId
@@ -54,13 +54,17 @@ module.exports.PaginationPlugin = {
 
           this.instanceQueue = this.instanceQueue.filter((instance) => {
             if (instance.storeModuleName !== mutation.payload) return true
-            linkPaginatedResource(instance.storeModuleName, instance.instanceId, instance.initialOpts)
+            this.linkPaginatedResource(instance.storeModuleName, instance.instanceId, instance.initialOpts)
             return false
           })
         })
-
+      },
+      mounted: function () {
+        if (!this._computedWatchers || !this.$store) return
         Object.keys(this._computedWatchers).forEach((key) => {
           Vue.nextTick(() => {
+            if (!this._computedWatchers[key].value) return
+
             let descriptor = Object.getOwnPropertyDescriptor(this._computedWatchers[key].value, 'VUEX_PAGINATION')
             if (!descriptor || descriptor.value !== true) return
             if (!this[key] || !this[key]._meta || typeof this[key]._meta !== 'object') return
@@ -81,7 +85,7 @@ module.exports.PaginationPlugin = {
               return
             }
 
-            linkPaginatedResource(meta.storeModule, this._uid + meta.id, initialOpts)
+            this.linkPaginatedResource(meta.storeModule, this._uid + meta.id, initialOpts)
           })
         })
       },
