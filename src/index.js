@@ -60,26 +60,27 @@ module.exports.PaginationPlugin = {
         })
 
         Object.keys(this._computedWatchers).forEach((key) => {
-          if (!this._computedWatchers[key].expression.includes('VUEX_PAGINATION_INSTANCE')) return
-          if (!this[key] || !this[key]._meta || typeof this[key]._meta !== 'object') return
-
-          let meta = this[key]._meta
-          let initialOpts = {
-            page: this[key].page,
-            pageSize: this[key].pageSize,
-            args: meta.initialArgs
-          }
-
-          if (typeof this.$store.getters[[getRootModuleName(), meta.storeModule, 'instance'].join('/')] === 'undefined') {
-            this.instanceQueue.push({
-              storeModuleName: meta.storeModule,
-              instanceId: this._uid + meta.id,
-              initialOpts
-            })
-            return
-          }
-
           Vue.nextTick(() => {
+            let descriptor = Object.getOwnPropertyDescriptor(this._computedWatchers[key].value, 'VUEX_PAGINATION')
+            if (!descriptor || descriptor.value !== true) return
+            if (!this[key] || !this[key]._meta || typeof this[key]._meta !== 'object') return
+
+            let meta = this[key]._meta
+            let initialOpts = {
+              page: this[key].page,
+              pageSize: this[key].pageSize,
+              args: meta.initialArgs
+            }
+
+            if (typeof this.$store.getters[[getRootModuleName(), meta.storeModule, 'instance'].join('/')] === 'undefined') {
+              this.instanceQueue.push({
+                storeModuleName: meta.storeModule,
+                instanceId: this._uid + meta.id,
+                initialOpts
+              })
+              return
+            }
+
             linkPaginatedResource(meta.storeModule, this._uid + meta.id, initialOpts)
           })
         })
