@@ -78,6 +78,12 @@ module.exports = function (rootModuleName, title, opts) {
     }
 
     return new Proxy({}, {
+      getOwnPropertyDescriptor (target, prop) {
+        if (prop === 'VUEX_PAGINATION') {
+          return { configurable: true, enumerable: true, value: true }
+        }
+        return undefined
+      },
       get,
       set,
       deleteProperty () {
