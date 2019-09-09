@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.2
+
+- Fixed a major bug where the library would not work in a built application
+
 ## v1.3.1
 
 - Fixed a bug where updating an instance before it got initialized would fail
