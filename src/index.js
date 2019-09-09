@@ -38,54 +38,48 @@ module.exports.PaginationPlugin = {
     Vue.mixin({
       created: function () {
         if (this.$store && !initializedStore) initializeStore(this.$store)
-        if (!this._computedWatchers || !this.$store) return
+        if (!this.$options.computed || !this.$store) return
+
         // We'll save instances whose modules have not been registered yet for later
         this.instanceQueue = this.instanceQueue || []
 
-        this.linkPaginatedResource = (storeModuleTitle, instanceId, initialOpts) => {
+        let linkPaginatedResource = (storeModuleTitle, instanceId, initialOpts) => {
           let action = [getRootModuleName(), storeModuleTitle, 'createInstance'].join('/')
           this.$store.dispatch(action, Object.assign({}, initialOpts, {
             id: instanceId
           }))
         }
 
+        Object.keys(this.$options.computed).forEach((key) => {
+          if (!this.$options.computed[key].$_vuexPagination) return
+          if (!this[key] || !this[key]._meta || typeof this[key]._meta !== 'object') return
+
+          let meta = this[key]._meta
+          let initialOpts = {
+            page: this[key].page,
+            pageSize: this[key].pageSize,
+            args: meta.initialArgs
+          }
+
+          if (typeof this.$store.getters[[getRootModuleName(), meta.storeModule, 'instance'].join('/')] === 'undefined') {
+            this.instanceQueue.push({
+              storeModuleName: meta.storeModule,
+              instanceId: this._uid + meta.id,
+              initialOpts
+            })
+            return
+          }
+
+          linkPaginatedResource(meta.storeModule, this._uid + meta.id, initialOpts)
+        })
+
         this.$store.subscribe((mutation) => {
           if (mutation.type !== `${getRootModuleName()}/initializedResource`) return
 
           this.instanceQueue = this.instanceQueue.filter((instance) => {
             if (instance.storeModuleName !== mutation.payload) return true
-            this.linkPaginatedResource(instance.storeModuleName, instance.instanceId, instance.initialOpts)
+            linkPaginatedResource(instance.storeModuleName, instance.instanceId, instance.initialOpts)
             return false
-          })
-        })
-      },
-      mounted: function () {
-        if (!this._computedWatchers || !this.$store) return
-        Object.keys(this._computedWatchers).forEach((key) => {
-          Vue.nextTick(() => {
-            if (!this._computedWatchers[key].value) return
-
-            let descriptor = Object.getOwnPropertyDescriptor(this._computedWatchers[key].value, 'VUEX_PAGINATION')
-            if (!descriptor || descriptor.value !== true) return
-            if (!this[key] || !this[key]._meta || typeof this[key]._meta !== 'object') return
-
-            let meta = this[key]._meta
-            let initialOpts = {
-              page: this[key].page,
-              pageSize: this[key].pageSize,
-              args: meta.initialArgs
-            }
-
-            if (typeof this.$store.getters[[getRootModuleName(), meta.storeModule, 'instance'].join('/')] === 'undefined') {
-              this.instanceQueue.push({
-                storeModuleName: meta.storeModule,
-                instanceId: this._uid + meta.id,
-                initialOpts
-              })
-              return
-            }
-
-            this.linkPaginatedResource(meta.storeModule, this._uid + meta.id, initialOpts)
           })
         })
       },
