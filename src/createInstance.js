@@ -6,7 +6,7 @@ module.exports = function (rootModuleName, title, opts) {
 
   if (opts.pageFrom || opts.pageTo) rangeMode = true
 
-  return function () {
+  let vuexPaginationGetter = function () {
     let store = this.$store
 
     let defaults = {
@@ -76,12 +76,6 @@ module.exports = function (rootModuleName, title, opts) {
     }
 
     return new Proxy({}, {
-      getOwnPropertyDescriptor (target, prop) {
-        if (prop === 'VUEX_PAGINATION') {
-          return { configurable: true, enumerable: true, value: true }
-        }
-        return undefined
-      },
       get,
       set,
       deleteProperty () {
@@ -103,4 +97,13 @@ module.exports = function (rootModuleName, title, opts) {
       }
     })
   }
+
+  Object.defineProperty(vuexPaginationGetter, '$_vuexPagination', {
+    value: true,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  })
+
+  return vuexPaginationGetter
 }
