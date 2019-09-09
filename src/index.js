@@ -38,7 +38,8 @@ module.exports.PaginationPlugin = {
     Vue.mixin({
       created: function () {
         if (this.$store && !initializedStore) initializeStore(this.$store)
-        if (!this._computedWatchers || !this.$store) return
+        if (!this.$options.computed || !this.$store) return
+
         // We'll save instances whose modules have not been registered yet for later
         this.instanceQueue = this.instanceQueue || []
 
@@ -49,18 +50,8 @@ module.exports.PaginationPlugin = {
           }))
         }
 
-        this.$store.subscribe((mutation) => {
-          if (mutation.type !== `${getRootModuleName()}/initializedResource`) return
-
-          this.instanceQueue = this.instanceQueue.filter((instance) => {
-            if (instance.storeModuleName !== mutation.payload) return true
-            linkPaginatedResource(instance.storeModuleName, instance.instanceId, instance.initialOpts)
-            return false
-          })
-        })
-
-        Object.keys(this._computedWatchers).forEach((key) => {
-          if (!this._computedWatchers[key].expression.includes('VUEX_PAGINATION_INSTANCE')) return
+        Object.keys(this.$options.computed).forEach((key) => {
+          if (!this.$options.computed[key].$_vuexPagination) return
           if (!this[key] || !this[key]._meta || typeof this[key]._meta !== 'object') return
 
           let meta = this[key]._meta
@@ -79,8 +70,16 @@ module.exports.PaginationPlugin = {
             return
           }
 
-          Vue.nextTick(() => {
-            linkPaginatedResource(meta.storeModule, this._uid + meta.id, initialOpts)
+          linkPaginatedResource(meta.storeModule, this._uid + meta.id, initialOpts)
+        })
+
+        this.$store.subscribe((mutation) => {
+          if (mutation.type !== `${getRootModuleName()}/initializedResource`) return
+
+          this.instanceQueue = this.instanceQueue.filter((instance) => {
+            if (instance.storeModuleName !== mutation.payload) return true
+            linkPaginatedResource(instance.storeModuleName, instance.instanceId, instance.initialOpts)
+            return false
           })
         })
       },

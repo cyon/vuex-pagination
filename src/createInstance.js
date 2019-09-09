@@ -6,9 +6,7 @@ module.exports = function (rootModuleName, title, opts) {
 
   if (opts.pageFrom || opts.pageTo) rangeMode = true
 
-  return function () {
-    // eslint-disable-next-line
-    const VUEX_PAGINATION_INSTANCE = true
+  let vuexPaginationGetter = function () {
     let store = this.$store
 
     let defaults = {
@@ -99,4 +97,13 @@ module.exports = function (rootModuleName, title, opts) {
       }
     })
   }
+
+  Object.defineProperty(vuexPaginationGetter, '$_vuexPagination', {
+    value: true,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  })
+
+  return vuexPaginationGetter
 }
