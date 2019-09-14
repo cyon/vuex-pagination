@@ -82,10 +82,10 @@ module.exports = function (name, fetchPage, opts) {
         })
 
         Object.keys(state.instances).map((id) => {
-          commit('setInstanceConfig', Object.assign({}, state.instances[id], { loading: true }))
+          commit('setInstanceConfig', Object.assign({}, state.instances[id], { id, loading: true }))
 
           dispatch('fetchPage', Object.assign({}, state.instances[id], { id })).then(() => {
-            commit('setInstanceConfig', Object.assign({}, state.instances[id], { loading: false }))
+            commit('setInstanceConfig', Object.assign({}, state.instances[id], { id, loading: false }))
           })
         })
       },
