@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.3.3
+## v1.3.4
 
 - Moved Vue plugin functionality from `created` into `beforeMount` to support SSR mechanisms
 - Added a few files to `.npmignore`
