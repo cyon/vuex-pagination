@@ -36,7 +36,7 @@ module.exports.PaginationPlugin = {
     setVueSet(Vue.set.bind(Vue))
     initializedStore = null
     Vue.mixin({
-      created: function () {
+      beforeMount: function () {
         if (this.$store && !initializedStore) initializeStore(this.$store)
         if (!this.$options.computed || !this.$store) return
 
