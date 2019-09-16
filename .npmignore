@@ -1,3 +1,6 @@
 test/
 examples/
 jest.config.js
+.travis.yml
+CHANGELOG.md
+visualisation.png
