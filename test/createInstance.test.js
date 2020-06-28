@@ -307,6 +307,10 @@ test('Base range functionality', async function () {
   expect(wrapper.vm.test.items.length).toBe(10)
   await nextTick()
 
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(2)
+  expect(wrapper.vm.test.items.length).toBe(20)
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 })
 
