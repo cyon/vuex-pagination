@@ -5,13 +5,6 @@
       <li v-for="item in licenses.items" :key="item.id">{{ item.id }}</li>
     </ul>
     <a @click="licenses.pageTo++">Load more...</a>
-    <pre>
-      page:     {{ licenses.page }}
-      pageFrom: {{ licenses.pageFrom }}
-      pageTo:   {{ licenses.pageTo }}
-      items:    {{ licenses.items.length }}
-      total:    {{ licenses.total }}
-    </pre>
   </div>
 </template>
 <script>
