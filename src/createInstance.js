@@ -27,11 +27,17 @@ module.exports = function (rootModuleName, title, opts) {
     let argsFn = (opts.args || (() => 'null')).bind(this)
 
     this.$watch(argsFn, (args) => {
-      store.dispatch([rootModuleName, title, 'updateInstance'].join('/'), {
+      const payload = {
         id: this._uid + instanceId,
-        page: 1,
         args
-      })
+      }
+      if (rangeMode) {
+        payload.pageFrom = 1
+        payload.pageTo = 1
+      } else {
+        payload.page = 1
+      }
+      store.dispatch([rootModuleName, title, 'updateInstance'].join('/'), payload)
     }, { deep: true })
 
     let initialArgs = argsFn()
