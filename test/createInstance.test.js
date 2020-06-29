@@ -307,6 +307,10 @@ test('Base range functionality', async function () {
   expect(wrapper.vm.test.items.length).toBe(10)
   await nextTick()
 
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(2)
+  expect(wrapper.vm.test.items.length).toBe(20)
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
 })
 
@@ -354,6 +358,87 @@ test('Range mode and load multiple pages', async function () {
   expect(wrapper.vm.test.pageTo).toBe(3)
 
   expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+})
+
+test('Range mode with args fn', async function () {
+  let adapter = new TestAdapter()
+  adapter.nextResult = {
+    total: 33,
+    data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+
+  const opts = {
+    pageFrom: 1,
+    pageTo: 1,
+    pageSize: 10,
+    args () {
+      return { counter: this.counter }
+    }
+  }
+
+  let component = {
+    data () {
+      return {
+        counter: 1
+      }
+    },
+    computed: {
+      test: createInstance('test12', opts)
+    },
+    render (h) {
+      return h('div')
+    }
+  }
+
+  let wrapper = createWrapper('test12', opts, component)
+  createResource('test12', adapter.fetchPage.bind(adapter))
+
+  expect(wrapper.vm.test.loading).toBe(true)
+  await nextTick()
+
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  expect(adapter.lastArgs.args).toEqual({ counter: 1 })
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(1)
+  expect(wrapper.vm.test.items.length).toBe(10)
+
+  adapter.nextResult = {
+    total: 33,
+    data: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+  }
+
+  wrapper.vm.test.pageTo = 2
+
+  expect(wrapper.vm.test.loading).toBe(true)
+  await nextTick()
+
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(2)
+  expect(wrapper.vm.test.items.length).toBe(20)
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+  expect(adapter.lastArgs.args).toEqual({ counter: 1 })
+
+  adapter.nextResult = {
+    total: 22,
+    data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+
+  wrapper.vm.counter = 2
+
+  expect(wrapper.vm.test.loading).toBe(true)
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(1)
+  await nextTick()
+
+  expect(wrapper.vm.test.loading).toBe(false)
+  expect(wrapper.vm.test.pageFrom).toBe(1)
+  expect(wrapper.vm.test.pageTo).toBe(1)
+  expect(wrapper.vm.test.total).toBe(22)
+  expect(wrapper.vm.test.items.length).toBe(10)
+  expect(wrapper.vm.test.items).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+  expect(adapter.lastArgs.args).toEqual({ counter: 2 })
 })
 
 test('Don\'t touch computed getters', async function () {
