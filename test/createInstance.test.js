@@ -486,6 +486,7 @@ test('Range mode with args fn and prefetch', async function () {
   expect(adapter.lastArgs.args).toEqual({ counter: 1 })
 
   wrapper.vm.test.pageTo = 2
+  await nextTick()
 
   expect(wrapper.vm.test.loading).toBe(false)
   expect(wrapper.vm.test.pageFrom).toBe(1)
@@ -516,6 +517,7 @@ test('Range mode with args fn and prefetch', async function () {
   expect(adapter.lastArgs.args).toEqual({ counter: 2 })
 
   wrapper.vm.test.pageTo = 2
+  await nextTick()
 
   expect(wrapper.vm.test.loading).toBe(false)
   expect(wrapper.vm.test.pageFrom).toBe(1)
