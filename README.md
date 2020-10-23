@@ -97,6 +97,13 @@ import { createResource } from 'vuex-pagination'
 async function fetchUsers (opts) {
   let users = window.fetch(`/users?page=${opts.page}&limit=${opts.pageSize}`)
     .then((response) => response.json())
+    .catch((error) => {
+        this.dispatch('SHOW_GLOBAL_ERROR_MESSAGE', error.response.data.message);
+        return {
+            total: 0,
+            data: [],
+        };
+    });
 
   return {
     total: users.total,
