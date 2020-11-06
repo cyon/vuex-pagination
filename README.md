@@ -3,6 +3,8 @@
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 [![build status](https://secure.travis-ci.org/cyon/vuex-pagination.png)](http://travis-ci.org/cyon/vuex-pagination)
 
+Note: This library only works with Vue 2. For Vue 3, take a look at [vue-use-pagination](https://www.github.com/cyon/vue-use-pagination).
+
 Library that makes it magnitudes easier to integrate paginated resources from an API
 (REST, GraphQL, or anything else) into your Vue application.
 
