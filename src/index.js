@@ -45,7 +45,7 @@ module.exports.PaginationPlugin = {
 
         let linkPaginatedResource = (storeModuleTitle, instanceId, initialOpts) => {
           let action = [getRootModuleName(), storeModuleTitle, 'createInstance'].join('/')
-          this.$store.dispatch(action, Object.assign({}, initialOpts, {
+          this.$vuexPaginationInitialized = this.$store.dispatch(action, Object.assign({}, initialOpts, {
             id: instanceId
           }))
         }
