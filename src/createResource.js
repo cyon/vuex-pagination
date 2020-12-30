@@ -148,7 +148,7 @@ module.exports = function (name, fetchPage, opts) {
         }
         commit('setInstanceConfig', Object.assign({}, opts))
 
-        dispatch('fetchPage', state.instances[opts.id]).then(() => {
+        return dispatch('fetchPage', state.instances[opts.id]).then(() => {
           commit('setInstanceConfig', Object.assign({}, opts, { loading: false }))
         })
       },
