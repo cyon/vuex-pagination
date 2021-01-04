@@ -112,6 +112,12 @@ module.exports.resource = function (name) {
   return createController(name)
 }
 
+module.exports.reset = function () {
+  initialResources = []
+  initializedStore = null
+  _store = null
+}
+
 function createController (name) {
   return {
     refresh: function () {
