@@ -352,6 +352,46 @@ We prepared a few examples for different use-cases. These can be found in the `e
 If you cloned this repository, you can run the examples by navigating to the respective folder
 and running `npm run serve`.
 
+## Testing
+
+The library does some "magic" in the background to make everything as reactive and easy to use
+as it is. Therefore you need to keep a few things in mind when testing components that use
+`vuex-pagination`:
+
+Internally, every instance in a component needs to be registered with the central Vuex store. Therefore
+you need to wait for the `$vuexPaginationInitialized` Promise to be resolved. After the that, the data
+from your instance is available.In a test with `vue-test-utils` this could look like the following:
+
+```javascript
+import { createLocalVue, mount } from '@vue/test-utils'
+import { PaginationPlugin } from 'vuex-pagination'
+import Vuex from 'vuex'
+
+const localVue = createLocalVue()
+localVue.use(PaginationPlugin)
+localVue.use(Vuex)
+
+const store = new Vuex.Store({})
+
+const wrapper = mount(Component, {
+  localVue,
+  store
+})
+
+await wrapper.vm.$vuexPaginationInitialized
+
+// do your testing here
+```
+
+If you do multiple tests, you'll need to reset the `vuex-pagination` instance before each of them:
+
+```javascript
+import { reset } from 'vuex-pagination'
+
+// after each test run:
+reset()
+```
+
 ## Tests
 
 Tests are implemented using [Jest](https://jestjs.io/) and
