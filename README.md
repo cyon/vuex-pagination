@@ -360,7 +360,7 @@ as it is. Therefore you need to keep a few things in mind when testing component
 
 Internally, every instance in a component needs to be registered with the central Vuex store. Therefore
 you need to wait for the `$vuexPaginationInitialized` Promise to be resolved. After the that, the data
-from your instance is available.In a test with `vue-test-utils` this could look like the following:
+from your instance is available. In a test with `vue-test-utils` this could look like the following:
 
 ```javascript
 import { createLocalVue, mount } from '@vue/test-utils'
