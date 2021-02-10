@@ -182,10 +182,11 @@ module.exports = function (name, fetchPage, opts) {
       prefetchNextPage: async function ({ commit, state }, instanceConfig) {
         if (state.currentRequest) await state.currentRequest
         let registryName = instanceConfig.registryName
-        if (instanceConfig.page && (instanceConfig.page * instanceConfig.pageSize) >= state.registry[registryName].items.length) return
-        if (instanceConfig.pageTo && (instanceConfig.pageTo * instanceConfig.pageSize) >= state.registry[registryName].items.length) return
+        let rangeMode = !!instanceConfig.pageFrom
+        let currentPage = rangeMode ? instanceConfig.pageTo : instanceConfig.page
+        if ((currentPage * instanceConfig.pageSize) >= state.registry[registryName].items.length) return
 
-        let nextPage = (instanceConfig.page ? instanceConfig.page : instanceConfig.pageTo) + 1
+        let nextPage = currentPage + 1
 
         let nextPageIndexStart = nextPage * instanceConfig.pageSize - instanceConfig.pageSize
         let nextPageFragment = state.registry[registryName].items.slice(nextPageIndexStart, nextPageIndexStart + instanceConfig.pageSize)
@@ -193,7 +194,12 @@ module.exports = function (name, fetchPage, opts) {
         if (!nextPageFragment.includes(undefined)) return
 
         let opts = Object.assign({}, instanceConfig)
-        opts.page += 1
+        if (rangeMode) {
+          opts.pageTo++
+          opts.page = opts.pageTo
+        } else {
+          opts.page++
+        }
         let nextPageReq = fetchPage.call(this, opts).then((result) => {
           let slice = []
           result.data.map((item) => {

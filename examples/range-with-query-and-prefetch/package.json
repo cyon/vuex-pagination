@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "serve": "../../node_modules/.bin/vue-cli-service serve main.js"
+  }
+}
